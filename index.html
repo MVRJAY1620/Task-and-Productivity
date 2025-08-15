@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="mb-4">Task & Productivity Tracker</h1>
+<!--Form to add a new task with due date--> 
+<form method="POST" action="/add" class="mb-4">
+    <div class="row g-2">
+        <div class="col-md-5">
+            <input type="text" name="title" class="form-control" placeholder="Enter task" required>
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="due_date" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">Add Task</button> <!--Creates Add Task button-->
+        </div>
+    </div>
+</form>
+<!--Displays a table which shows tasks, their status and complete or delete options-->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Task</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task[1] }}</td>
+            <td>{{ task[2] }}</td>
+            <td>{{ task[3] }}</td>
+            <td>
+                {% if task[3] != "Completed" %}
+                    <a href="/complete/{{ task[0] }}" class="btn btn-success btn-sm">Complete</a> <!-- Creates Complete button -->
+                {% endif %}
+                <a href="/delete/{{ task[0] }}" class="btn btn-danger btn-sm">Delete</a> <!-- Creates Delete button -->
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<!--Shows the chart at the center of the page--> 
+<h3 class="mt-5 text-center">Productivity Chart</h3>
+<div class="d-flex justify-content-center">
+    <div style="max-width: 300px;">
+        <canvas id="productivityChart"
+            data-completion="{{ completion_rate }}"
+            data-pending="{{ 100 - completion_rate }}">
+        </canvas>
+    </div>
+</div>
+
+
+<script>
+    // Read values from HTML attributes (always valid JS)
+    const completionRate = parseFloat(document.getElementById('productivityChart').dataset.completion);
+    const pendingRate = parseFloat(document.getElementById('productivityChart').dataset.pending);
+    // Creates the pie chart with completed and pending tasks
+    const ctx = document.getElementById('productivityChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Completed', 'Pending'],
+            datasets: [{
+                data: [completionRate, pendingRate],
+                backgroundColor: ['#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: false, // turn off automatic resizing
+            maintainAspectRatio: false
+        }
+    });
+</script>
+{% endblock %}
